@@ -23,6 +23,7 @@ import type { ChatModel } from "@/lib/ai/models";
 import { type RequestHints, systemPrompt } from "@/lib/ai/prompts";
 import { myProvider } from "@/lib/ai/providers";
 import { createDocument } from "@/lib/ai/tools/create-document";
+import { createProject } from "@/lib/ai/tools/create-project";
 import { getWeather } from "@/lib/ai/tools/get-weather";
 import { requestSuggestions } from "@/lib/ai/tools/request-suggestions";
 import { updateDocument } from "@/lib/ai/tools/update-document";
@@ -90,7 +91,8 @@ export async function POST(request: Request) {
   try {
     const json = await request.json();
     requestBody = postRequestBodySchema.parse(json);
-  } catch (_) {
+  } catch (error) {
+    console.error("Request parsing error:", error);
     return new ChatSDKError("bad_request:api").toResponse();
   }
 
@@ -131,16 +133,28 @@ export async function POST(request: Request) {
         return new ChatSDKError("forbidden:chat").toResponse();
       }
     } else {
-      const title = await generateTitleFromUserMessage({
-        message,
-      });
-
+      // Save chat immediately with a placeholder title
       await saveChat({
         id,
         userId: session.user.id,
-        title,
+        title: "New Chat",
         visibility: selectedVisibilityType,
       });
+
+      // Generate title asynchronously (don't block the response)
+      generateTitleFromUserMessage({ message })
+        .then((title) => {
+          // Update the title in the background
+          return saveChat({
+            id,
+            userId: session.user.id,
+            title,
+            visibility: selectedVisibilityType,
+          });
+        })
+        .catch((err) => {
+          console.error("Failed to generate title:", err);
+        });
     }
 
     const messagesFromDb = await getMessagesByChatId({ id });
@@ -155,21 +169,23 @@ export async function POST(request: Request) {
       country,
     };
 
-    await saveMessages({
-      messages: [
-        {
-          chatId: id,
-          id: message.id,
-          role: "user",
-          parts: message.parts,
-          attachments: [],
-          createdAt: new Date(),
-        },
-      ],
-    });
-
+    // Save user message and create stream ID in parallel (don't block)
     const streamId = generateUUID();
-    await createStreamId({ streamId, chatId: id });
+    Promise.all([
+      saveMessages({
+        messages: [
+          {
+            chatId: id,
+            id: message.id,
+            role: "user",
+            parts: message.parts,
+            attachments: [],
+            createdAt: new Date(),
+          },
+        ],
+      }),
+      createStreamId({ streamId, chatId: id }),
+    ]).catch((err) => console.error("Failed to save initial data:", err));
 
     let finalMergedUsage: AppUsage | undefined;
 
@@ -181,6 +197,7 @@ export async function POST(request: Request) {
           messages: convertToModelMessages(uiMessages),
           stopWhen: stepCountIs(5),
           experimental_activeTools:
+            selectedChatModel === "deepseek-reasoner" ||
             selectedChatModel === "chat-model-reasoning"
               ? []
               : [
@@ -198,6 +215,7 @@ export async function POST(request: Request) {
               session,
               dataStream,
             }),
+            createProject,
           },
           experimental_telemetry: {
             isEnabled: isProductionEnvironment,
@@ -302,7 +320,7 @@ export async function POST(request: Request) {
       return new ChatSDKError("bad_request:activate_gateway").toResponse();
     }
 
-    console.error("Unhandled error in chat API:", error, { vercelId });
+    console.error("Chat API error:", error, { vercelId });
     return new ChatSDKError("offline:chat").toResponse();
   }
 }

@@ -12,7 +12,14 @@ export const entitlementsByUserType: Record<UserType, Entitlements> = {
    */
   guest: {
     maxMessagesPerDay: 20,
-    availableChatModelIds: ["chat-model", "chat-model-reasoning"],
+    availableChatModelIds: [
+      "deepseek-chat",
+      "deepseek-coder",
+      "deepseek-reasoner",
+      "gpt-4o-mini",
+      "claude-3-5-haiku",
+      "gemini-2.0-flash",
+    ],
   },
 
   /*
@@ -20,7 +27,16 @@ export const entitlementsByUserType: Record<UserType, Entitlements> = {
    */
   regular: {
     maxMessagesPerDay: 100,
-    availableChatModelIds: ["chat-model", "chat-model-reasoning"],
+    availableChatModelIds: [
+      "deepseek-chat",
+      "deepseek-coder",
+      "deepseek-reasoner",
+      "gpt-4o",
+      "gpt-4o-mini",
+      "claude-3-5-sonnet",
+      "claude-3-5-haiku",
+      "gemini-2.0-flash",
+    ],
   },
 
   /*

@@ -87,7 +87,14 @@ export function ModelSelector({
                 type="button"
               >
                 <div className="flex flex-col items-start gap-1">
-                  <div className="text-sm sm:text-base">{chatModel.name}</div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm sm:text-base">
+                      {chatModel.name}
+                    </span>
+                    <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-muted-foreground text-xs capitalize">
+                      {chatModel.provider}
+                    </span>
+                  </div>
                   <div className="line-clamp-2 text-muted-foreground text-xs">
                     {chatModel.description}
                   </div>
