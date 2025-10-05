@@ -49,8 +49,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       paymentLink: {
-        id: paymentLink.id,
-        shortUrl: paymentLink.short_url,
+        id: (paymentLink as any).id,
+        shortUrl: (paymentLink as any).short_url,
         amount: planDetails.totalAmount,
         baseAmount: planDetails.baseAmount,
         gstAmount: planDetails.gstAmount,
