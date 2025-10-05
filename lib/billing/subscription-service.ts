@@ -77,18 +77,21 @@ export class SubscriptionService {
         },
       });
 
+      // Map Razorpay status to our schema
+      const mappedStatus = this.mapRazorpayStatus((razorpaySubscription as any).status);
+
       // Store in database
       const [newSubscription] = await db
         .insert(subscription)
         .values({
           userId: params.userId,
           tier: params.tier,
-          status: razorpaySubscription.status,
-          razorpayCustomerId: customer.id,
-          razorpaySubscriptionId: razorpaySubscription.id,
+          status: mappedStatus,
+          razorpayCustomerId: (customer as any).id,
+          razorpaySubscriptionId: (razorpaySubscription as any).id,
           razorpayPlanId: plan.id,
-          currentPeriodStart: new Date(razorpaySubscription.start_at * 1000),
-          currentPeriodEnd: new Date(razorpaySubscription.end_at * 1000),
+          currentPeriodStart: new Date((razorpaySubscription as any).start_at * 1000),
+          currentPeriodEnd: new Date((razorpaySubscription as any).end_at * 1000),
           cancelAtPeriodEnd: false,
         })
         .returning();
@@ -289,6 +292,26 @@ export class SubscriptionService {
   }
 
   // Private helper methods
+
+  private mapRazorpayStatus(razorpayStatus: string): "active" | "canceled" | "past_due" | "trialing" {
+    // Map Razorpay subscription statuses to our schema
+    switch (razorpayStatus) {
+      case "active":
+      case "authenticated":
+      case "completed":
+        return "active";
+      case "cancelled":
+      case "canceled":
+      case "expired":
+      case "halted":
+        return "canceled";
+      case "pending":
+      case "created":
+        return "trialing";
+      default:
+        return "active";
+    }
+  }
 
   private mapToSubscriptionDetails(sub: any): SubscriptionDetails {
     return {
