@@ -5,7 +5,7 @@ import { isTestEnvironment } from "../constants";
 // DeepSeek provider (OpenAI-compatible)
 // IMPORTANT: Use chat() method to get chat completion models, NOT the default which uses responses API
 const deepseekProvider = createOpenAI({
-  apiKey: process.env.DEEPSEEK_API_KEY ?? "",
+  apiKey: process.env.DEEPSEEK_API_KEY || "sk-placeholder",
   baseURL: "https://api.deepseek.com/v1",
 });
 
