@@ -38,8 +38,13 @@ export default function Page() {
       });
     } else if (state.status === "success") {
       setIsSuccessful(true);
-      updateSession();
-      router.push("/");
+      updateSession().then(() => {
+        // Small delay to ensure session is updated
+        setTimeout(() => {
+          router.push("/");
+          router.refresh();
+        }, 100);
+      });
     }
   }, [state.status, router, updateSession]);
 
