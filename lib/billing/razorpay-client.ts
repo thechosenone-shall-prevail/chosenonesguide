@@ -31,11 +31,11 @@ export class RazorpayClient {
     try {
       const subscription = await this.client.subscriptions.create({
         plan_id: params.planId,
-        customer_id: params.customerId,
+        ...(params.customerId && { customer_id: params.customerId }),
         total_count: params.totalCount,
         customer_notify: params.customerNotify ? 1 : 0,
         notes: params.notes,
-      });
+      } as any);
 
       return subscription;
     } catch (error) {
@@ -59,7 +59,7 @@ export class RazorpayClient {
         email: params.email,
         contact: params.contact,
         notes: params.notes,
-      });
+      } as any);
 
       return customer;
     } catch (error) {
@@ -91,7 +91,7 @@ export class RazorpayClient {
           : undefined,
         callback_url: params.callbackUrl,
         callback_method: params.callbackMethod,
-      });
+      } as any);
 
       return paymentLink;
     } catch (error) {
@@ -205,7 +205,7 @@ export class RazorpayClient {
         description: params.description,
         amount: params.amount,
         currency: params.currency,
-      });
+      } as any);
       return invoice;
     } catch (error) {
       console.error("Razorpay invoice creation error:", error);
