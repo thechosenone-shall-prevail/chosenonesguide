@@ -1,7 +1,7 @@
 // Deployment Types
 
 export type DeploymentPlatform = "vercel" | "netlify" | "railway" | "render";
-export type DeploymentStatus = "pending" | "building" | "deployed" | "failed";
+export type DeploymentStatusType = "pending" | "building" | "deployed" | "failed";
 
 export interface DeploymentConfig {
   platform: DeploymentPlatform;
@@ -18,7 +18,7 @@ export interface DeploymentResult {
   success: boolean;
   deploymentId: string;
   url?: string;
-  status: DeploymentStatus;
+  status: DeploymentStatusType;
   logs: string[];
   error?: string;
   duration: number;
@@ -26,7 +26,7 @@ export interface DeploymentResult {
 
 export interface DeploymentStatus {
   id: string;
-  status: DeploymentStatus;
+  status: DeploymentStatusType;
   url?: string;
   createdAt: Date;
   completedAt?: Date;
