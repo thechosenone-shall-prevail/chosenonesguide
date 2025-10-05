@@ -108,7 +108,7 @@ export class WebContainerSandbox {
   async installDependencies(
     packageManager: "npm" | "yarn" | "pnpm" = "npm"
   ): Promise<ExecutionResult> {
-    const commands: Record<string, string[]> = {
+    const commands: Record<string, [string, string[]]> = {
       npm: ["npm", ["install"]],
       yarn: ["yarn", ["install"]],
       pnpm: ["pnpm", ["install"]],
